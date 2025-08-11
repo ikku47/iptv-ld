@@ -28,15 +28,15 @@ export const ChannelGrid: React.FC<ChannelGridProps> = ({
   onClearSearch
 }) => {
   return (
-    <div className="h-full flex flex-col bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl border border-gray-700 shadow-xl">
-      <div className="flex-shrink-0 p-4 border-b border-gray-700">
+    <div className="h-full flex flex-col bg-gradient-to-br from-card to-card/50 rounded-xl border border-border shadow-xl">
+      <div className="flex-shrink-0 p-4 border-b border-border/50">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-bold text-green-300 glow-text font-mono">CHANNELS</h2>
-            <div className="text-sm text-gray-400 font-mono">
+            <h2 className="text-xl font-bold text-primary glow-text font-mono">CHANNELS</h2>
+            <div className="text-sm text-muted-foreground font-mono">
               {filteredChannels.length} of {channels.length} available
               {searchQuery && (
-                <span className="text-green-400 ml-2">
+                <span className="text-primary ml-2">
                   • "{searchQuery}"
                 </span>
               )}
@@ -44,8 +44,8 @@ export const ChannelGrid: React.FC<ChannelGridProps> = ({
           </div>
           {currentChannel && (
             <div className="text-right">
-              <div className="text-xs text-gray-500 font-mono">NOW PLAYING</div>
-              <div className="text-sm text-green-400 font-medium truncate max-w-32">
+              <div className="text-xs text-muted-foreground font-mono">NOW PLAYING</div>
+              <div className="text-sm text-primary font-medium truncate max-w-32">
                 {currentChannel.name}
               </div>
             </div>
@@ -68,24 +68,24 @@ export const ChannelGrid: React.FC<ChannelGridProps> = ({
         {isLoading ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-400 mx-auto mb-4"></div>
-              <div className="text-lg mb-2 text-gray-400">LOADING CHANNELS</div>
-              <div className="text-sm text-gray-500">Please wait...</div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+              <div className="text-lg mb-2 text-muted-foreground">LOADING CHANNELS</div>
+              <div className="text-sm text-muted-foreground/70">Please wait...</div>
             </div>
           </div>
         ) : channels.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
-              <Upload className="w-12 h-12 mx-auto mb-4 text-gray-500" />
-              <div className="text-lg mb-2 text-gray-400">NO PLAYLIST LOADED</div>
-              <div className="text-sm text-gray-500">Upload an M3U file to begin</div>
+              <Upload className="w-12 h-12 mx-auto mb-4 text-muted-foreground/50" />
+              <div className="text-lg mb-2 text-muted-foreground">NO PLAYLIST LOADED</div>
+              <div className="text-sm text-muted-foreground/70">Upload an M3U file to begin</div>
             </div>
           </div>
         ) : filteredChannels.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
-              <div className="text-lg mb-2 text-gray-400">NO CHANNELS FOUND</div>
-              <div className="text-sm text-gray-500">Try adjusting your search</div>
+              <div className="text-lg mb-2 text-muted-foreground">NO CHANNELS FOUND</div>
+              <div className="text-sm text-muted-foreground/70">Try adjusting your search</div>
             </div>
           </div>
         ) : (

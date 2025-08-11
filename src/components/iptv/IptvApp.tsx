@@ -8,6 +8,7 @@ import { useChannels } from "@/hooks/useChannels"
 import { Channel, Playlist } from "@/types/iptv"
 import { Button } from "@/components/ui/button"
 import { Upload, List } from "lucide-react"
+import { ThemeToggle } from "@/components/ui/theme-toggle"
 
 export const IptvApp: React.FC = () => {
   const [showPlaylistSelector, setShowPlaylistSelector] = useState(true)
@@ -63,7 +64,8 @@ export const IptvApp: React.FC = () => {
   }
 
   return (
-    <div className="h-screen bg-black text-green-400 font-mono flex flex-col overflow-hidden">
+    <div className="h-screen bg-gradient-to-br from-background via-muted/20 to-background text-foreground font-mono flex flex-col overflow-hidden">
+      <ThemeToggle />
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6 p-4 overflow-hidden">
         {/* CRT TV Player */}
         <div className="lg:col-span-2 overflow-hidden flex flex-col">
@@ -87,16 +89,16 @@ export const IptvApp: React.FC = () => {
             {/* Current Playlist Info */}
             {selectedPlaylist && (
               <div className="text-center">
-                <p className="text-green-400 font-mono text-sm">
+                <p className="text-primary font-mono text-sm">
                   📺 {selectedPlaylist.name} ({selectedPlaylist.count} channels)
                 </p>
                 {playlistError && (
-                  <p className="text-red-400 font-mono text-xs mt-1">
+                  <p className="text-destructive font-mono text-xs mt-1">
                     Error: {playlistError}
                   </p>
                 )}
                 {loadingPlaylist && (
-                  <p className="text-green-400 font-mono text-xs mt-1">
+                  <p className="text-primary font-mono text-xs mt-1">
                     Loading playlist...
                   </p>
                 )}
@@ -108,7 +110,7 @@ export const IptvApp: React.FC = () => {
               {channels.length > 0 && (
                 <Button
                   onClick={() => setShowPlaylistSelector(!showPlaylistSelector)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white border border-blue-500 px-4 py-2 rounded-lg font-mono text-sm transition-all duration-200 hover:shadow-lg hover:shadow-blue-500/20"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground border border-primary/50 px-4 py-2 rounded-lg font-mono text-sm transition-all duration-200 hover:shadow-lg hover:shadow-primary/20"
                 >
                   <List className="w-4 h-4 mr-2" />
                   {showPlaylistSelector ? "HIDE PLAYLISTS" : "CHOOSE PLAYLIST"}
@@ -117,7 +119,7 @@ export const IptvApp: React.FC = () => {
               
               <Button
                 onClick={triggerFileUpload}
-                className="bg-green-600 hover:bg-green-700 text-white border border-green-500 px-4 py-2 rounded-lg font-mono text-sm transition-all duration-200 hover:shadow-lg hover:shadow-green-500/20"
+                className="bg-secondary hover:bg-secondary/90 text-secondary-foreground border border-secondary/50 px-4 py-2 rounded-lg font-mono text-sm transition-all duration-200 hover:shadow-lg hover:shadow-secondary/20"
               >
                 <Upload className="w-4 h-4 mr-2" />
                 UPLOAD FILE
