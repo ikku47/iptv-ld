@@ -19,7 +19,7 @@ export const parseM3U = (content: string): Channel[] => {
       // Parse channel info
       const infoMatch = line.match(/#EXTINF:(-?\d+)\s*(.*)/)
       if (infoMatch) {
-        const [, duration, info] = infoMatch
+        const [, , info] = infoMatch
         
         // Extract channel name (everything after the last comma)
         const lastCommaIndex = info.lastIndexOf(',')

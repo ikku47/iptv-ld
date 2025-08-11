@@ -5,7 +5,7 @@ import { Channel } from "@/types/iptv"
 export const useVideoPlayer = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [isTvOn, setIsTvOn] = useState(false)
-  const [volume, setVolume] = useState(0.5)
+
   const [isMuted, setIsMuted] = useState(false)
   const [videoError, setVideoError] = useState<string | null>(null)
   const [videoReady, setVideoReady] = useState(false)
@@ -23,10 +23,9 @@ export const useVideoPlayer = () => {
   const handleVideoLoad = useCallback(() => {
     setIsLoading(false)
     if (videoRef.current) {
-      videoRef.current.volume = volume
       videoRef.current.muted = isMuted
     }
-  }, [volume, isMuted])
+  }, [isMuted])
 
   const handleVideoCanPlay = useCallback(() => {
     setIsLoading(false)
@@ -142,13 +141,7 @@ export const useVideoPlayer = () => {
     }
   }, [isMuted])
 
-  const handleVolumeChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const newVolume = Number.parseFloat(e.target.value)
-    setVolume(newVolume)
-    if (videoRef.current) {
-      videoRef.current.volume = newVolume
-    }
-  }, [])
+
 
   const toggleTv = useCallback(() => {
     setIsTvOn(!isTvOn)

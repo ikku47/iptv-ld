@@ -35,11 +35,11 @@ export const ChannelGrid: React.FC<ChannelGridProps> = ({
             <h2 className="text-xl font-bold text-primary glow-text font-mono">CHANNELS</h2>
             <div className="text-sm text-muted-foreground font-mono">
               {filteredChannels.length} of {channels.length} available
-              {searchQuery && (
-                <span className="text-primary ml-2">
-                  • "{searchQuery}"
-                </span>
-              )}
+                              {searchQuery && (
+                  <span className="text-primary ml-2">
+                    • &quot;{searchQuery}&quot;
+                  </span>
+                )}
             </div>
           </div>
           {currentChannel && (
