@@ -24,6 +24,7 @@ export const ChannelCard: React.FC<ChannelCardProps> = ({
     >
       <div className="flex items-center gap-2.5">
         {channel.logo ? (
+          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={channel.logo}
             alt={channel.name}

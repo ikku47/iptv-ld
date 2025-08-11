@@ -3,7 +3,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Playlist } from "@/types/iptv"
 import { Globe, Languages, FolderOpen, Flag, Loader2, ExternalLink, CheckCircle, Play } from "lucide-react"
-import { useTheme } from "@/components/ui/theme-provider"
 
 interface PlaylistSelectorProps {
   onPlaylistSelect: (playlist: Playlist) => void
@@ -68,7 +67,6 @@ export const PlaylistSelector: React.FC<PlaylistSelectorProps> = ({
   selectedPlaylistId
 }) => {
   const [loadingStates, setLoadingStates] = useState<Record<string, boolean>>({})
-  const { theme } = useTheme()
 
   const handlePlaylistClick = async (playlist: Playlist) => {
     setLoadingStates(prev => ({ ...prev, [playlist.id]: true }))

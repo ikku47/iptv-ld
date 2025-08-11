@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button"
 import { Power, Volume2, VolumeX, Maximize } from "lucide-react"
 
 interface TvControlsProps {
-  isTvOn: boolean
   isMuted: boolean
   videoReady: boolean
   onToggleTv: () => void
@@ -13,7 +12,6 @@ interface TvControlsProps {
 }
 
 export const TvControls: React.FC<TvControlsProps> = ({
-  isTvOn,
   isMuted,
   videoReady,
   onToggleTv,

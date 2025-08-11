@@ -61,7 +61,6 @@ export const TvPlayer: React.FC<TvPlayerProps> = ({
 
       <div className="flex-shrink-0 mt-4">
         <TvControls
-          isTvOn={isTvOn}
           isMuted={isMuted}
           videoReady={videoReady}
           onToggleTv={onToggleTv}
