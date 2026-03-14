@@ -1,36 +1,90 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 📺 IPTV-LD
 
-## Getting Started
+![IPTV-LD Hero Banner](./public/docs/cover.png)
 
-First, run the development server:
+## 🌟 Overview
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+**IPTV-LD** is a high-performance, modern web-based IPTV player built with **Next.js 15** and **React 19**. Designed for speed, aesthetics, and reliability, it provides a premium experience for streaming M3U/M3U8 playlists directly in your browser.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Whether you're managing thousands of channels or just your favorites, IPTV-LD handles it all with smooth virtualization and intuitive navigation.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## ✨ Key Features
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+-   🚀 **Ultra-Fast Performance**: Powered by TanStack Virtual for liquid-smooth scrolling, even with playlists containing 10,000+ channels.
+-   📺 **Premium Video Player**: Built on Video.js and HLS.js for robust playback supporting multiple streaming formats.
+-   📂 **Playlist Management**:
+    -   Load remote M3U/M3U8 playlists via URL.
+    -   Securely upload local playlist files.
+-   📂 **Smart Grouping**: Automatically categorizes channels into groups based on M3U metadata.
+-   ⭐ **Favorites System**: Keep your most-watched channels just a click away with local persistence.
+-   🔍 **Optimized Search**: Instant, debounced search across all channels and groups.
+-   📅 **EPG Integration**: Native support for Electronic Program Guide (EPG) visualization.
+-   🎨 **Modern UI/UX**: Sleek dark-themed interface with glassmorphism effects and responsive design.
 
-## Learn More
+## 🛠️ Tech Stack
 
-To learn more about Next.js, take a look at the following resources:
+-   **Framework**: [Next.js 15](https://nextjs.org/) (App Router)
+-   **Library**: [React 19](https://react.dev/)
+-   **Styling**: [Tailwind CSS 4](https://tailwindcss.com/)
+-   **State Management**: [Zustand](https://github.com/pmndrs/zustand)
+-   **Video Engine**: [Video.js](https://videojs.com/) & [HLS.js](https://github.com/video-dev/hls.js/)
+-   **List Virtualization**: [TanStack Virtual](https://tanstack.com/query/latest)
+-   **Icons**: [Lucide React](https://lucide.dev/)
+-   **Components**: [Radix UI](https://www.radix-ui.com/) & [Shadcn UI](https://ui.shadcn.com/)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🚀 Getting Started
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Prerequisites
 
-## Deploy on Vercel
+-   [Node.js](https://nodejs.org/) (v18.0.0 or higher)
+-   [npm](https://www.npmjs.com/), [yarn](https://yarnpkg.com/), [pnpm](https://pnpm.io/), or [bun](https://bun.sh/)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Installation
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1.  **Clone the repository**:
+    ```bash
+    git clone https://github.com/your-username/iptv-ld.git
+    cd iptv-ld
+    ```
+
+2.  **Install dependencies**:
+    ```bash
+    npm install
+    # or
+    bun install
+    ```
+
+3.  **Start the development server**:
+    ```bash
+    npm run dev
+    # or
+    bun dev
+    ```
+
+4.  **Open the app**:
+    Navigate to [http://localhost:3000](http://localhost:3000) in your browser.
+
+## 📖 Usage
+
+1.  **Initial Load**: By default, the app loads a sample playlist.
+2.  **Custom URL**: Use the sidebar to input your own M3U playlist URL.
+3.  **Local File**: Click the "Upload" icon in the sidebar to load an `.m3u` or `.m3u8` file from your computer.
+4.  **Favorites**: Click the star icon next to any channel to save it to your favorites.
+
+## ⚖️ Legal Notice & Disclaimer
+
+**IMPORTANT READ:**
+
+-   **IPTV-LD** is purely a media player. It does **NOT** provide, host, or include any media content, playlists, or streaming services.
+-   Users are solely responsible for obtaining their own legal M3U playlists and content.
+-   IPTV-LD has no affiliation with any third-party playlist providers.
+-   The developers of IPTV-LD do not condone or support the streaming of copyrighted material without permission from the copyright holders.
+-   Users should ensure they comply with the laws of their local jurisdiction before using this software.
+
+## 📄 License
+
+This project is licensed under the [MIT License](./LICENSE) - see the file for details.
+
+---
+
+<p align="center">Made with ❤️ for the open-source community</p>
