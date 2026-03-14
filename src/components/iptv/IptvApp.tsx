@@ -1,162 +1,322 @@
-import React, { useState } from "react"
-import { PlaylistSelector } from "./PlaylistSelector"
-import { TvPlayer } from "../tv/TvPlayer"
-import { ChannelGrid } from "../channels/ChannelGrid"
+"use client"
+
+import React, { useState, useEffect, useMemo } from "react"
+import { TvPlayer } from "@/components/tv/TvPlayer"
+import { ChannelList } from "@/components/channels/ChannelList"
+import { GroupsPanel } from "@/components/channels/GroupsPanel"
+import { EpgPanel } from "@/components/epg/EpgPanel"
 import { useVideoPlayer } from "@/hooks/useVideoPlayer"
 import { useChannels } from "@/hooks/useChannels"
-import { Channel, Playlist } from "@/types/iptv"
-import { Button } from "@/components/ui/button"
-import { Upload, List } from "lucide-react"
-import { ThemeToggle } from "@/components/ui/theme-toggle"
+import { useFavoritesStore, selectFavoriteUrls } from "@/store/useFavoritesStore"
+import type { Channel, Playlist } from "@/types/iptv"
+
+// ── Types ────────────────────────────────────────────────────────────────────
+
+type SidebarTab = "all" | "groups" | "favorites"
+
+const SIDEBAR_TABS: { id: SidebarTab; label: string }[] = [
+  { id: "all", label: "All Channels" },
+  { id: "groups", label: "Groups" },
+  { id: "favorites", label: "Favorites" },
+]
+
+// ── Constants ─────────────────────────────────────────────────────────────────
+
+const DEFAULT_PLAYLIST: Playlist = {
+  id: "all",
+  name: "All Channels",
+  description: "All available IPTV channels",
+  url: "https://iptv-org.github.io/iptv/index.m3u",
+  type: "category",
+}
+
+// ── Sub-components ───────────────────────────────────────────────────────────
+
+const UploadIcon: React.FC = () => (
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+    <polyline points="17 8 12 3 7 8" />
+    <line x1="12" y1="3" x2="12" y2="15" />
+  </svg>
+)
+
+// ── Component ────────────────────────────────────────────────────────────────
 
 export const IptvApp: React.FC = () => {
-  const [showPlaylistSelector, setShowPlaylistSelector] = useState(true)
-  
+  const [activeTab, setActiveTab] = useState<SidebarTab>("all")
+  const [hasMounted, setHasMounted] = useState(false)
+
+  // Hydration guard for persisted store
+  useEffect(() => {
+    setHasMounted(true)
+  }, [])
+
+  // ── Video player ───────────────────────────────────────────────────────────
   const {
-    videoRef,
+    currentSrc,
     isLoading,
-    isTvOn,
     isMuted,
     videoError,
-    videoReady,
     playChannel,
     toggleMute,
-    toggleTv,
-    turnOnTv,
-    setVideoError
+    handlePlayerReady,
+    handlePlaying,
+    handleWaiting,
+    handleError,
+    handleFullscreen,
+    retry,
   } = useVideoPlayer()
 
+  // ── Channel management ─────────────────────────────────────────────────────
   const {
     channels,
     currentChannel,
     selectedPlaylist,
     loadingPlaylist,
-    playlistError,
     searchQuery,
     filteredChannels,
-    isSearching,
     fileInputRef,
     handleFileUpload,
     loadPlaylistFromUrl,
     selectChannel,
     updateSearchQuery,
-    triggerFileUpload
+    triggerFileUpload,
   } = useChannels()
+
+  // ── Favorites (Zustand + localStorage persistence) ─────────────────────────
+  const { favorites, toggleFavorite, isFavorite } = useFavoritesStore()
+
+  // Derive a Set of URLs for O(1) per-row lookup — recomputes only when favorites change
+  const favoriteUrls = useMemo(
+    () => selectFavoriteUrls({ favorites, toggleFavorite, isFavorite, clearFavorites: () => {} }),
+    [favorites, toggleFavorite, isFavorite]
+  )
+
+  // ── Initialisation ─────────────────────────────────────────────────────────
+  useEffect(() => {
+    loadPlaylistFromUrl(DEFAULT_PLAYLIST)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // ── Handlers ───────────────────────────────────────────────────────────────
 
   const handleChannelSelect = (channel: Channel) => {
     selectChannel(channel)
     playChannel(channel)
   }
 
-  const handlePlaylistSelect = (playlist: Playlist) => {
-    loadPlaylistFromUrl(playlist)
-    setShowPlaylistSelector(false)
+  const handleToggleFavorite = (channel: Channel) => {
+    toggleFavorite(channel)
   }
 
-  const handleRetry = () => {
-    setVideoError(null)
+  const handleToggleCurrentFavorite = () => {
+    if (currentChannel) toggleFavorite(currentChannel)
   }
 
-  const handleManualPlay = async () => {
-    // Video.js handles autoplay automatically
-    console.log("Manual play requested")
-  }
+  // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <div className="h-screen bg-gradient-to-br from-background via-muted/20 to-background text-foreground font-mono flex flex-col overflow-hidden">
-      <ThemeToggle />
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6 p-4 overflow-hidden">
-        {/* CRT TV Player */}
-        <div className="lg:col-span-2 overflow-hidden flex flex-col">
-                     <TvPlayer
-             videoRef={videoRef}
-             isTvOn={isTvOn}
-             isLoading={isLoading}
-             currentChannel={currentChannel}
-             videoError={videoError}
-             isMuted={isMuted}
-             videoReady={videoReady}
-             onPowerOn={turnOnTv}
-             onToggleTv={toggleTv}
-             onToggleMute={toggleMute}
-             onRetry={handleRetry}
-             onManualPlay={handleManualPlay}
-           />
-          
-          {/* File Upload and Playlist Info */}
-          <div className="flex flex-col items-center mt-4 space-y-2">
-            {/* Current Playlist Info */}
-            {selectedPlaylist && (
-              <div className="text-center">
-                <p className="text-primary font-mono text-sm">
-                  📺 {selectedPlaylist.name} ({selectedPlaylist.count} channels)
-                </p>
-                {playlistError && (
-                  <p className="text-destructive font-mono text-xs mt-1">
-                    Error: {playlistError}
-                  </p>
-                )}
-                {loadingPlaylist && (
-                  <p className="text-primary font-mono text-xs mt-1">
-                    Loading playlist...
-                  </p>
-                )}
-              </div>
+    <div className="app-shell">
+
+      {/* ── Sidebar ─────────────────────────────────────────────── */}
+      <aside className="sidebar">
+
+        {/* Tab navigation */}
+        <nav className="sidebar-tabs" aria-label="Channel navigation">
+          {SIDEBAR_TABS.map(({ id, label }) => (
+            <button
+              key={id}
+              className={`sidebar-tab${activeTab === id ? " active" : ""}`}
+              onClick={() => setActiveTab(id)}
+              aria-selected={activeTab === id}
+            >
+              {label}
+              {id === "favorites" && favorites.length > 0 && (
+                <span
+                  style={{
+                    marginLeft: 5,
+                    fontSize: 10,
+                    background: "var(--primary)",
+                    color: "#fff",
+                    borderRadius: 8,
+                    padding: "1px 5px",
+                    fontWeight: 700,
+                    lineHeight: 1.4,
+                  }}
+                >
+                  {favorites.length}
+                </span>
+              )}
+            </button>
+          ))}
+        </nav>
+
+        {/* Search bar shared between All and Favorites */}
+        {(activeTab === "all" || activeTab === "favorites") && (
+          <div className="sidebar-search">
+            <input
+              id="channel-search"
+              className="sidebar-search-input"
+              type="text"
+              placeholder={activeTab === "all" ? "Search channels…" : "Search favorites…"}
+              value={searchQuery}
+              onChange={(e) => updateSearchQuery(e.target.value)}
+              aria-label="Search channels"
+            />
+            {activeTab === "all" && (
+              <>
+                <button
+                  className="sidebar-upload-btn"
+                  onClick={triggerFileUpload}
+                  title="Upload M3U playlist"
+                  aria-label="Upload M3U playlist"
+                >
+                  <UploadIcon />
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".m3u,.m3u8"
+                  onChange={handleFileUpload}
+                  aria-hidden="true"
+                  style={{ display: "none" }}
+                />
+              </>
+            )}
+          </div>
+        )}
+
+        {/* ── Tab content ─────────────────────────────────────────── */}
+        {!hasMounted ? (
+          <div className="empty-state">
+            <div className="player-loading-spinner" />
+          </div>
+        ) : (
+          <>
+            {activeTab === "all" && (
+              <ChannelList
+                channels={filteredChannels}
+                currentChannel={currentChannel}
+                isLoading={loadingPlaylist}
+                favoriteUrls={favoriteUrls}
+                onChannelSelect={handleChannelSelect}
+                onToggleFavorite={handleToggleFavorite}
+              />
             )}
 
-            {/* Action Buttons */}
-            <div className="flex gap-2">
-              {channels.length > 0 && (
-                <Button
-                  onClick={() => setShowPlaylistSelector(!showPlaylistSelector)}
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground border border-primary/50 px-4 py-2 rounded-lg font-mono text-sm transition-all duration-200 hover:shadow-lg hover:shadow-primary/20"
-                >
-                  <List className="w-4 h-4 mr-2" />
-                  {showPlaylistSelector ? "HIDE PLAYLISTS" : "CHOOSE PLAYLIST"}
-                </Button>
-              )}
-              
-              <Button
-                onClick={triggerFileUpload}
-                className="bg-secondary hover:bg-secondary/90 text-secondary-foreground border border-secondary/50 px-4 py-2 rounded-lg font-mono text-sm transition-all duration-200 hover:shadow-lg hover:shadow-secondary/20"
-              >
-                <Upload className="w-4 h-4 mr-2" />
-                UPLOAD FILE
-              </Button>
-            </div>
+            {activeTab === "groups" && (
+              <GroupsPanel
+                currentChannel={currentChannel}
+                favoriteUrls={favoriteUrls}
+                onChannelSelect={handleChannelSelect}
+                onToggleFavorite={handleToggleFavorite}
+              />
+            )}
 
-            {/* Hidden File Input */}
-            <input 
-              type="file" 
-              accept=".m3u,.m3u8" 
-              onChange={handleFileUpload} 
-              ref={fileInputRef} 
-              className="hidden" 
-            />
-          </div>
-        </div>
+            {activeTab === "favorites" && (
+              favorites.length === 0 ? (
+                <div className="empty-state">
+                  <svg
+                    width="36"
+                    height="36"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    style={{ opacity: 0.35 }}
+                    aria-hidden="true"
+                  >
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                  </svg>
+                  <div className="empty-state-title">No Favorites Yet</div>
+                  <div className="empty-state-desc">
+                    Tap the ★ next to any channel to save it here
+                  </div>
+                </div>
+              ) : (
+                <ChannelList
+                  channels={favorites.filter(f => 
+                    f.name.toLowerCase().includes(searchQuery.toLowerCase())
+                  )}
+                  currentChannel={currentChannel}
+                  favoriteUrls={favoriteUrls}
+                  onChannelSelect={handleChannelSelect}
+                  onToggleFavorite={handleToggleFavorite}
+                />
+              )
+            )}
+          </>
+        )}
 
-        {/* Right Panel - Playlist Selector or Channel Grid */}
-        <div className="overflow-hidden">
-          {showPlaylistSelector || channels.length === 0 ? (
-            <PlaylistSelector
-              onPlaylistSelect={handlePlaylistSelect}
-              selectedPlaylistId={selectedPlaylist?.id}
-            />
-          ) : (
-                         <ChannelGrid
-               channels={channels}
-               filteredChannels={filteredChannels}
-               currentChannel={currentChannel}
-               searchQuery={searchQuery}
-               isSearching={isSearching}
-               isLoading={loadingPlaylist}
-               onChannelSelect={handleChannelSelect}
-               onSearchChange={updateSearchQuery}
-             />
-          )}
-        </div>
-      </div>
+        {/* Status footer — only shown on All Channels tab */}
+        {activeTab === "all" && selectedPlaylist && (
+          <footer
+            style={{
+              flexShrink: 0,
+              padding: "7px 12px",
+              borderTop: "1px solid var(--border)",
+              fontSize: 11,
+              color: "var(--muted-foreground)",
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+            }}
+          >
+            <span style={{ flex: 1 }}>
+              {channels.length.toLocaleString()} channels
+            </span>
+            <button
+              onClick={triggerFileUpload}
+              style={{
+                background: "none",
+                border: "none",
+                color: "var(--primary)",
+                cursor: "pointer",
+                fontSize: 11,
+                padding: 0,
+              }}
+              aria-label="Upload M3U playlist"
+            >
+              Upload
+            </button>
+          </footer>
+        )}
+
+      </aside>
+
+      {/* ── Video player ─────────────────────────────────────────── */}
+      <TvPlayer
+        currentSrc={currentSrc}
+        isLoading={isLoading}
+        currentChannel={currentChannel}
+        videoError={videoError}
+        isMuted={isMuted}
+        isFavorite={currentChannel ? isFavorite(currentChannel) : false}
+        selectedPlaylist={selectedPlaylist}
+        channels={channels}
+        onPlayerReady={handlePlayerReady}
+        onError={handleError}
+        onPlaying={handlePlaying}
+        onWaiting={handleWaiting}
+        onToggleMute={toggleMute}
+        onToggleFavorite={handleToggleCurrentFavorite}
+        onFullscreen={handleFullscreen}
+        onRetry={retry}
+      />
+
+      {/* ── EPG panel ────────────────────────────────────────────── */}
+      <EpgPanel currentChannel={currentChannel} />
+
     </div>
   )
 }

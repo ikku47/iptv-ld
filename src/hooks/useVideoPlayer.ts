@@ -1,221 +1,100 @@
-import { useState, useRef, useEffect, useCallback } from "react"
-import Hls from "hls.js"
-import { Channel } from "@/types/iptv"
+import { useState, useCallback, useRef } from "react"
+import type Player from "video.js/dist/types/player"
+import type { Channel } from "@/types/iptv"
 
-export const useVideoPlayer = () => {
+// ── Types ────────────────────────────────────────────────────────────────────
+
+export interface VideoPlayerState {
+  currentSrc: string | null
+  isLoading: boolean
+  isMuted: boolean
+  videoError: string | null
+}
+
+export interface VideoPlayerActions {
+  playChannel: (channel: Channel) => void
+  toggleMute: () => void
+  handlePlayerReady: (player: Player) => void
+  handlePlaying: () => void
+  handleWaiting: () => void
+  handleError: (message: string) => void
+  handleFullscreen: () => void
+  retry: () => void
+}
+
+export type UseVideoPlayerReturn = VideoPlayerState & VideoPlayerActions
+
+// ── Hook ─────────────────────────────────────────────────────────────────────
+
+export function useVideoPlayer(): UseVideoPlayerReturn {
+  const [currentSrc, setCurrentSrc] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
-  const [isTvOn, setIsTvOn] = useState(false)
-
   const [isMuted, setIsMuted] = useState(false)
   const [videoError, setVideoError] = useState<string | null>(null)
-  const [videoReady, setVideoReady] = useState(false)
-  
-  const videoRef = useRef<HTMLVideoElement>(null)
-  const hlsRef = useRef<Hls | null>(null)
 
-  const destroyHls = useCallback(() => {
-    if (hlsRef.current) {
-      hlsRef.current.destroy()
-      hlsRef.current = null
-    }
+  // Store the Video.js player instance in a ref to avoid re-renders
+  const playerRef = useRef<Player | null>(null)
+
+  const handlePlayerReady = useCallback((player: Player) => {
+    playerRef.current = player
   }, [])
 
-  const handleVideoLoad = useCallback(() => {
-    setIsLoading(false)
-    if (videoRef.current) {
-      videoRef.current.muted = isMuted
-    }
-  }, [isMuted])
-
-  const handleVideoCanPlay = useCallback(() => {
-    setIsLoading(false)
-  }, [])
-
-  const handleVideoError = useCallback((error: Event) => {
-    console.error("Video error:", error)
-    setIsLoading(false)
-    
-    const video = videoRef.current
-    if (video) {
-      console.error("Video error details:", {
-        error: video.error,
-        networkState: video.networkState,
-        readyState: video.readyState,
-        src: video.src
-      })
-      
-      if (video.error) {
-        switch (video.error.code) {
-          case 1:
-            setVideoError("Video loading aborted")
-            break
-          case 2:
-            setVideoError("Network error - check your connection")
-            break
-          case 3:
-            setVideoError("Video decoding failed")
-            break
-          case 4:
-            setVideoError("Video not supported")
-            break
-          default:
-            setVideoError("Video playback error")
-        }
-      } else {
-        setVideoError("Unable to load video stream")
-      }
-    }
-  }, [])
-
-  const playChannel = useCallback(async (channel: Channel) => {
-    setIsLoading(true)
+  const playChannel = useCallback((channel: Channel) => {
     setVideoError(null)
-
-    const video = videoRef.current
-    if (!video) {
-      console.error("Video element not found")
-      setVideoError("Video player not available")
-      setIsLoading(false)
-      return
-    }
-
-    destroyHls()
-
-    video.pause()
-    video.currentTime = 0
-    video.src = ""
-
-    const isHlsStream = channel.url.includes('.m3u8') || channel.url.includes('application/x-mpegURL')
-    
-    if (isHlsStream && Hls.isSupported()) {
-      try {
-        const hls = new Hls({
-          debug: false,
-          enableWorker: true,
-          lowLatencyMode: true,
-          backBufferLength: 90
-        })
-        
-        hlsRef.current = hls
-        
-        hls.loadSource(channel.url)
-        hls.attachMedia(video)
-        
-        hls.on(Hls.Events.MANIFEST_PARSED, () => {
-          console.log("HLS manifest parsed, attempting to play")
-          video.play().catch(error => {
-            console.error("HLS autoplay failed:", error)
-          })
-        })
-        
-        hls.on(Hls.Events.ERROR, (event, data) => {
-          console.error("HLS error:", data)
-          if (data.fatal) {
-            setVideoError(`HLS Error: ${data.details}`)
-            setIsLoading(false)
-          }
-        })
-        
-      } catch (error) {
-        console.error("HLS initialization failed:", error)
-        setVideoError("Failed to initialize HLS player")
-        setIsLoading(false)
-      }
-    } else {
-      try {
-        video.src = channel.url
-        video.load()
-        await video.play()
-      } catch (error) {
-        console.error("Native video play failed:", error)
-        setVideoError("Failed to play video stream")
-        setIsLoading(false)
-      }
-    }
-  }, [destroyHls])
+    setIsLoading(true)
+    setCurrentSrc(channel.url)
+  }, [])
 
   const toggleMute = useCallback(() => {
-    setIsMuted(!isMuted)
-    if (videoRef.current) {
-      videoRef.current.muted = !isMuted
-    }
-  }, [isMuted])
-
-
-
-  const toggleTv = useCallback(() => {
-    setIsTvOn(!isTvOn)
-  }, [isTvOn])
-
-  const turnOnTv = useCallback(() => {
-    setIsTvOn(true)
+    setIsMuted((prev) => {
+      const next = !prev
+      playerRef.current?.muted(next)
+      return next
+    })
   }, [])
 
-  useEffect(() => {
-    const video = videoRef.current
-    if (video) {
-      setVideoReady(true)
-      console.log("Video element ready")
-      
-      const logEvent = (eventName: string) => (event?: Event) => {
-        console.log(`[Video Event] ${eventName}`, event)
-      }
+  const handleFullscreen = useCallback(() => {
+    playerRef.current?.requestFullscreen()
+  }, [])
 
-      video.addEventListener("loadeddata", handleVideoLoad)
-      video.addEventListener("loadeddata", logEvent("loadeddata"))
-      video.addEventListener("canplay", handleVideoCanPlay)
-      video.addEventListener("canplay", logEvent("canplay"))
-      video.addEventListener("error", handleVideoError)
-      video.addEventListener("error", logEvent("error"))
-      video.addEventListener("loadstart", () => {
-        setIsLoading(true)
-        console.log("[Video Event] loadstart")
-      })
-      video.addEventListener("waiting", () => {
-        setIsLoading(true)
-        console.log("[Video Event] waiting")
-      })
-      video.addEventListener("playing", () => {
-        setIsLoading(false)
-        console.log("[Video Event] playing")
-      })
+  const handlePlaying = useCallback(() => {
+    setIsLoading(false)
+    setVideoError(null)
+  }, [])
 
-      return () => {
-        video.removeEventListener("loadeddata", handleVideoLoad)
-        video.removeEventListener("loadeddata", logEvent("loadeddata"))
-        video.removeEventListener("canplay", handleVideoCanPlay)
-        video.removeEventListener("canplay", logEvent("canplay"))
-        video.removeEventListener("error", handleVideoError)
-        video.removeEventListener("error", logEvent("error"))
-        video.removeEventListener("loadstart", () => {
-          setIsLoading(true)
-          console.log("[Video Event] loadstart")
-        })
-        video.removeEventListener("waiting", () => {
-          setIsLoading(true)
-          console.log("[Video Event] waiting")
-        })
-        video.removeEventListener("playing", () => {
-          setIsLoading(false)
-          console.log("[Video Event] playing")
-        })
-        
-        destroyHls()
-      }
-    }
-  }, [handleVideoLoad, handleVideoCanPlay, handleVideoError, destroyHls])
+  const handleWaiting = useCallback(() => {
+    setIsLoading(true)
+  }, [])
+
+  const handleError = useCallback((message: string) => {
+    setIsLoading(false)
+    setVideoError(message)
+  }, [])
+
+  const retry = useCallback(() => {
+    const player = playerRef.current
+    if (!currentSrc || !player || player.isDisposed()) return
+
+    setVideoError(null)
+    setIsLoading(true)
+
+    const isHls = currentSrc.includes(".m3u8") || currentSrc.includes("mpegurl")
+    player.src({ src: currentSrc, type: isHls ? "application/x-mpegURL" : "video/mp4" })
+    player.play()?.catch(() => {})
+  }, [currentSrc])
 
   return {
-    videoRef,
+    currentSrc,
     isLoading,
-    isTvOn,
     isMuted,
     videoError,
-    videoReady,
     playChannel,
     toggleMute,
-    toggleTv,
-    turnOnTv,
-    setVideoError
+    handlePlayerReady,
+    handlePlaying,
+    handleWaiting,
+    handleError,
+    handleFullscreen,
+    retry,
   }
 }
