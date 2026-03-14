@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "IPTVnator",
+  title: "IPTV",
   description: "A modern IPTV player application",
 };
 
