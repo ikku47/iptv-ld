@@ -10,6 +10,7 @@ import type { Channel, Playlist } from "@/types/iptv"
 
 export interface TvPlayerProps {
   currentSrc: string | null
+  currentHeaders?: Record<string, string>
   isLoading: boolean
   currentChannel: Channel | null
   videoError: string | null
@@ -75,6 +76,7 @@ const BufferingOverlay: React.FC = () => (
 
 export const TvPlayer: React.FC<TvPlayerProps> = ({
   currentSrc,
+  currentHeaders,
   isLoading,
   currentChannel,
   videoError,
@@ -113,6 +115,7 @@ export const TvPlayer: React.FC<TvPlayerProps> = ({
       {/* Video.js is always mounted; src prop drives playback */}
       <VideoJsPlayer
         src={currentSrc}
+        headers={currentHeaders}
         onPlayerReady={onPlayerReady}
         onError={onError}
         onPlaying={onPlaying}

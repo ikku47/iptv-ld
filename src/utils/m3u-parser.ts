@@ -58,6 +58,28 @@ export const parseM3U = (content: string): Channel[] => {
           geoBlocked: info.includes('[Geo-blocked]'),
           not24_7: info.includes('[Not 24/7]')
         }
+
+        // Extract headers from EXTINF attributes if present
+        const referrer = extractAttribute(info, 'http-referrer')
+        const userAgent = extractAttribute(info, 'http-user-agent')
+        
+        if (referrer || userAgent) {
+          if (!currentChannel.headers) currentChannel.headers = {}
+          if (referrer) currentChannel.headers['Referer'] = referrer
+          if (userAgent) currentChannel.headers['User-Agent'] = userAgent
+        }
+      }
+    } else if (line.startsWith("#EXTVLCOPT:")) {
+      // Parse VLC options
+      const opt = line.substring(11).trim()
+      if (opt.startsWith("http-referrer=")) {
+        const referrer = opt.substring(14).trim()
+        if (!currentChannel.headers) currentChannel.headers = {}
+        currentChannel.headers['Referer'] = referrer
+      } else if (opt.startsWith("http-user-agent=")) {
+        const userAgent = opt.substring(16).trim()
+        if (!currentChannel.headers) currentChannel.headers = {}
+        currentChannel.headers['User-Agent'] = userAgent
       }
     } else if (line && !line.startsWith('#') && currentChannel.name) {
       // This is the URL line

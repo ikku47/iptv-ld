@@ -6,6 +6,7 @@ import type { Channel } from "@/types/iptv"
 
 export interface VideoPlayerState {
   currentSrc: string | null
+  currentHeaders?: Record<string, string>
   isLoading: boolean
   isMuted: boolean
   videoError: string | null
@@ -28,6 +29,7 @@ export type UseVideoPlayerReturn = VideoPlayerState & VideoPlayerActions
 
 export function useVideoPlayer(): UseVideoPlayerReturn {
   const [currentSrc, setCurrentSrc] = useState<string | null>(null)
+  const [currentHeaders, setCurrentHeaders] = useState<Record<string, string> | undefined>(undefined)
   const [isLoading, setIsLoading] = useState(false)
   const [isMuted, setIsMuted] = useState(false)
   const [videoError, setVideoError] = useState<string | null>(null)
@@ -42,6 +44,7 @@ export function useVideoPlayer(): UseVideoPlayerReturn {
   const playChannel = useCallback((channel: Channel) => {
     setVideoError(null)
     setIsLoading(true)
+    setCurrentHeaders(channel.headers)
     setCurrentSrc(channel.url)
   }, [])
 
@@ -79,12 +82,17 @@ export function useVideoPlayer(): UseVideoPlayerReturn {
     setIsLoading(true)
 
     const isHls = currentSrc.includes(".m3u8") || currentSrc.includes("mpegurl")
-    player.src({ src: currentSrc, type: isHls ? "application/x-mpegURL" : "video/mp4" })
+    player.src({ 
+      src: currentSrc, 
+      type: isHls ? "application/x-mpegURL" : "video/mp4",
+      headers: currentHeaders 
+    })
     player.play()?.catch(() => {})
-  }, [currentSrc])
+  }, [currentSrc, currentHeaders])
 
   return {
     currentSrc,
+    currentHeaders,
     isLoading,
     isMuted,
     videoError,

@@ -64,6 +64,7 @@ export const IptvApp: React.FC = () => {
   // ── Video player ───────────────────────────────────────────────────────────
   const {
     currentSrc,
+    currentHeaders,
     isLoading,
     isMuted,
     videoError,
@@ -297,6 +298,7 @@ export const IptvApp: React.FC = () => {
       {/* ── Video player ─────────────────────────────────────────── */}
       <TvPlayer
         currentSrc={currentSrc}
+        currentHeaders={currentHeaders}
         isLoading={isLoading}
         currentChannel={currentChannel}
         videoError={videoError}

@@ -9,6 +9,7 @@ import type Player from "video.js/dist/types/player"
 
 export interface VideoJsPlayerProps {
   src: string | null
+  headers?: Record<string, string>
   onPlayerReady?: (player: Player) => void
   onError?: (message: string) => void
   onPlaying?: () => void
@@ -28,6 +29,7 @@ function resolveType(src: string): string {
 
 export const VideoJsPlayer: React.FC<VideoJsPlayerProps> = ({
   src,
+  headers,
   onPlayerReady,
   onError,
   onPlaying,
@@ -93,11 +95,15 @@ export const VideoJsPlayer: React.FC<VideoJsPlayerProps> = ({
       return
     }
 
-    player.src({ src, type: resolveType(src) })
+    player.src({ 
+      src, 
+      type: resolveType(src),
+      headers: headers
+    })
     player.play()?.catch(() => {
       // Browser may block autoplay — user interaction will resume playback
     })
-  }, [src])
+  }, [src, headers])
 
   return (
     <div

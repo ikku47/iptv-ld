@@ -28,6 +28,7 @@ export interface Channel {
   timezone?: string
   geoBlocked?: boolean
   not24_7?: boolean
+  headers?: Record<string, string>
 }
 
 export interface Playlist {
